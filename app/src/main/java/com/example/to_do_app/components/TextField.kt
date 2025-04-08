@@ -1,5 +1,4 @@
-package com.example.to_do_app.components
-
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -8,35 +7,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import com.example.to_do_app.ui.theme.ShapeTextEdit
-
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun MyTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     label: String,
-    maxLines: Int,
-    keyboardType: KeyboardType
+    maxLines: Int = 1,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
-
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifer = modifier,
-        label = {
-            Text(text = label)
-        },
+        modifier = modifier,
+        label = { Text(text = label) },
         maxLines = maxLines,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.Blue,
             focusedLabelColor = Color.Blue,
-            cursorColor = Color.Blue
+            cursorColor = Color.Blue,
+            unfocusedBorderColor = Color.Gray,
+            unfocusedLabelColor = Color.Gray
         ),
-        shape = ShapeTextEdit.small,
-        keyboardOptions = KeyboardOptions (
-            keyboardType = keyboardType
-        )
+        shape = RoundedCornerShape(4.dp), // Use standard RoundedCornerShape
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
     )
 }
