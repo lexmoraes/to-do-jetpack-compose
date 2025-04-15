@@ -1,5 +1,8 @@
 package com.example.to_do_app.view
 
+import MyTextField
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,19 +21,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.to_do_app.components.CustomButton
-import com.example.to_do_app.components.MyTextField
+import com.example.to_do_app.model.Priority
+import com.example.to_do_app.model.TaskModel
+import com.example.to_do_app.repository.TaskRepository
 import com.example.to_do_app.ui.theme.GreenRadioButtonDisabled
 import com.example.to_do_app.ui.theme.GreenRadioButtonSelected
 import com.example.to_do_app.ui.theme.PurpleGrey40
@@ -38,16 +46,22 @@ import com.example.to_do_app.ui.theme.RedRadioButtonDisabled
 import com.example.to_do_app.ui.theme.RedRadioButtonSelected
 import com.example.to_do_app.ui.theme.YellowRadioButtonDisabled
 import com.example.to_do_app.ui.theme.YellowRadioButtonSelected
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SaveTask(navController: NavController) {
-    var taskTitle by remember { mutableStateOf("") }
-    var taskDescription by remember { mutableStateOf("") }
-    var noPriority by remember { mutableStateOf(false) }
-    var lowPriority by remember { mutableStateOf(false) }
-    var mediumPriority by remember { mutableStateOf(false) }
-    var highPriority by remember { mutableStateOf(false) }
+    var taskTitle by remember { mutableStateOf(value = "") }
+    var taskDescription by remember { mutableStateOf(value = "") }
+    var taskPriority by remember { mutableIntStateOf(Priority.NO_PRIORITY.value) }
+    var lowPriority by remember { mutableStateOf(value = false) }
+    var mediumPriority by remember { mutableStateOf(value = false) }
+    var highPriority by remember { mutableStateOf(value = false) }
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -152,8 +166,40 @@ fun SaveTask(navController: NavController) {
                     .fillMaxWidth()
                     .height(80.dp)
                     .padding(10.dp),
-                label = "Salvar"
+                buttonColor = Color.Blue,
+                label = "Salvar",
+                contentColor = TODO()
             )
+        }
+    }
+}
+
+fun onClickSaveButton(
+    scope: CoroutineScope,
+    context: Context,
+    taskModel: TaskModel
+) {
+    val taskRepository = TaskRepository()
+    var isValid = true
+
+    scope.launch(Dispatchers.IO) {
+        isValid = taskModel.title!!.isEmpty() && taskModel.description!!.isEmpty()
+        taskRepository.saveTask(taskModel)
+    }
+
+    scope.launch(Dispatchers.Main) {
+        if (isValid) {
+            Toast.makeText(context, "Salvo com sucesso!", Toast.LENGTH_SHORT).show()
+        } else {
+            taskModel.title?.let {
+                if (it.isEmpty()) {
+                    Toast.makeText(context, "Título é obrigatório!", Toast.LENGTH_SHORT).show()
+                } else taskModel.description?.let {
+                    if (it.isEmpty()) {
+                        Toast.makeText(context, "Descrição é obrigatória!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
     }
 }
